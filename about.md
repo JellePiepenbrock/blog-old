@@ -4,12 +4,5 @@ title: About
 permalink: /about/
 ---
 
-Some information about me!
+I'm a Computing Science MSc student. This blog is where I'll put some of my side projects, that mainly exist to satisfy my own curiosity. However, it might also be interesting for other people.
 
-### More Information
-
-Lots of interesting information here.
-
-### Contact me
-
-[email@domain.com](mailto:email@domain.com)
