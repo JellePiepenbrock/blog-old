@@ -15,83 +15,79 @@ The encoder is driven to put as much useful information in the code representati
 
 Let us get to the code. First we define a Dataset that will give use the 4 sequences that we want to perform independent component analysis on. 
 
-```python
+    class UniformDataset(Dataset):
+        """Uniform dataset."""
+    
+        def __init__(self):
+            self.uniformdata = np.random.uniform(size=(4, 4))
+            print(self.uniformdata)
+    
+        def __len__(self):
+            return len(self.uniformdata)
+    
+        def __getitem__(self, idx):
+            return self.uniformdata[idx]
 
-class UniformDataset(Dataset):
-    """Uniform dataset."""
-
-    def __init__(self):
-        self.uniformdata = np.random.uniform(size=(4, 4))
-        print(self.uniformdata)
-
-    def __len__(self):
-        return len(self.uniformdata)
-
-    def __getitem__(self, idx):
-        return self.uniformdata[idx]
-
-```
 A typical set of 4 data points looks like this:
-```python
->> [[0.08641456 0.19421044 0.88229338 0.0361495 ]
->>  [0.01163331 0.33199609 0.38802061 0.66070623]
->>  [0.5881097  0.97043498 0.98881562 0.11357908]
->>  [0.94657677 0.69272661 0.26470928 0.88500763]]
-```
+
+    >> [[0.08641456 0.19421044 0.88229338 0.0361495 ]
+    >>  [0.01163331 0.33199609 0.38802061 0.66070623]
+    >>  [0.5881097  0.97043498 0.98881562 0.11357908]
+    >>  [0.94657677 0.69272661 0.26470928 0.88500763]]
+
 
 Now we define the Predictability Minimization class, which will host the neural networks that will be adversarially optimizing their losses. The point of this code is to be clear, but it can definitely be expanded to a case with a larger code and more predictor units. 
 
-```python
-class PM(nn.Module):
 
-    def __init__(self):
-        super(PM, self).__init__()
+    class PM(nn.Module):
 
-        # encoder
-        self.encoder = nn.Sequential(
-            nn.Linear(4, 40),
-            nn.ReLU(),
-            nn.Linear(40, 2),
-            nn.Sigmoid()
-        )
+        def __init__(self):
+            super(PM, self).__init__()
+    
+            # encoder
+            self.encoder = nn.Sequential(
+                nn.Linear(4, 40),
+                nn.ReLU(),
+                nn.Linear(40, 2),
+                nn.Sigmoid()
+            )
+    
+            # decoder
+    
+            self.decoder = nn.Sequential(
+                nn.Linear(2, 40),
+                nn.ReLU(),
+                nn.Linear(40, 4)
+            )
+    
+            # predictor 1
+    
+            self.predictor1 = nn.Sequential(
+                nn.Linear(1, 40),
+                nn.ReLU(),
+                nn.Linear(40, 1),
+                nn.Sigmoid()
+            )
+    
+            # predictor 2
+    
+            self.predictor2 = nn.Sequential(
+                nn.Linear(1, 40),
+                nn.ReLU(),
+                nn.Linear(40, 1),
+                nn.Sigmoid()
+            )
+    
+        def forward(self, x):
+            code = self.encoder(x)
+    
+            reconstruction = self.decoder(code)
+    
+            code1 = torch.tensor(code)[:, 1].reshape(4, 1)
+            code0 = torch.tensor(code)[:, 0].reshape(4, 1)
+    
+            pred1 = self.predictor1(code1).to(device)
+            pred2 = self.predictor2(code0).to(device)
+    
+            return code, pred1, pred2, reconstruction
 
-        # decoder
-
-        self.decoder = nn.Sequential(
-            nn.Linear(2, 40),
-            nn.ReLU(),
-            nn.Linear(40, 4)
-        )
-
-        # predictor 1
-
-        self.predictor1 = nn.Sequential(
-            nn.Linear(1, 40),
-            nn.ReLU(),
-            nn.Linear(40, 1),
-            nn.Sigmoid()
-        )
-
-        # predictor 2
-
-        self.predictor2 = nn.Sequential(
-            nn.Linear(1, 40),
-            nn.ReLU(),
-            nn.Linear(40, 1),
-            nn.Sigmoid()
-        )
-
-    def forward(self, x):
-        code = self.encoder(x)
-
-        reconstruction = self.decoder(code)
-
-        code1 = torch.tensor(code)[:, 1].reshape(4, 1)
-        code0 = torch.tensor(code)[:, 0].reshape(4, 1)
-
-        pred1 = self.predictor1(code1).to(device)
-        pred2 = self.predictor2(code0).to(device)
-
-        return code, pred1, pred2, reconstruction
-
-```
