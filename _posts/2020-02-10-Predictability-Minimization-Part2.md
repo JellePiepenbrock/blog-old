@@ -94,7 +94,7 @@ class PM(nn.Module):
 
 ```
 
-On to the loss terms: we have a standarse mean square error loss for the autoencoder part:
+On to the loss terms: we have a standard mean square error loss for the autoencoder part:
 
 $$ I = \frac{1}{n} \sum_{n=1}^N (Y_{true} - Y_{pred})^2 $$
 
