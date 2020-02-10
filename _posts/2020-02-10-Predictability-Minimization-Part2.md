@@ -93,3 +93,8 @@ class PM(nn.Module):
         return code, pred1, pred2, reconstruction
 
 ```
+
+On to the loss terms: we have a standarse mean square error loss for the autoencoder part:
+
+
+$$ I = \frac{1}{n} \sum_{n=1}^N (Y_{code} - Y_{pred})^2 $$
