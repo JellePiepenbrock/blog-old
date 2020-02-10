@@ -9,11 +9,13 @@ For now though, image that you have 4 sequences containing uniformly random numb
 
 There are widely established and well-understood methods such as principal component analysis (PCA). PCA however is a linear method and will not accurately represent non-linear patterns in the data. There are other-nonlinear, or locally linear methods such as UMAP, T-SNE, and so on. In independent component analysis with predictability minimization, we formulate the problem in an adversarial way. 
 
+
+![Predictability minimization setup](https://raw.githubusercontent.com/jellepiepenbrock/jellepiepenbrock.github.io/master/_posts/images/pm.png)
+Figure 1: The basic setup of predictability minimization for independent component analysis.
+
 There is an encoder-decoder, which wants to encode the data and reconstruct it as best as possible. There is also a collection of predictors, that get the latent code of the encoder as their input, except for one code value, and these predictors have to predict the value of this missing unit.
 
 The encoder is driven to put as much useful information in the code representation as possible (so that the encoder may use it to reconstruct the input). While doing this, the encoder also tries to maximize the loss of the collection of predictors: it encodes the information such that knowing the value of 1 code unit is of no use for predicting another. At the end of the process, what we are left with is an encoder that will perform independent component analysis on (data similar to) the training data.
-
-![alt text](https://raw.githubusercontent.com/jellepiepenbrock/jellepiepenbrock.github.io/master/_posts/images/pm.png)
 
 Let us get to the code. First we define a Dataset that will give use the 4 sequences that we want to perform independent component analysis on. 
 ```python
