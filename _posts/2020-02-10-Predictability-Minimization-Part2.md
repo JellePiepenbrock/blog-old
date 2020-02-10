@@ -13,7 +13,7 @@ There is an encoder-decoder, which wants to encode the data and reconstruct it a
 
 The encoder is driven to put as much useful information in the code representation as possible (so that the encoder may use it to reconstruct the input). While doing this, the encoder also tries to maximize the loss of the collection of predictors: it encodes the information such that knowing the value of 1 code unit is of no use for predicting another. At the end of the process, what we are left with is an encoder that will perform independent component analysis on (data similar to) the training data.
 
-![alt text](images/pm.svg)
+![alt text](https://raw.githubusercontent.com/jellepiepenbrock/jellepiepenbrock.github.io/master/_posts/images/pm.svg)
 
 Let us get to the code. First we define a Dataset that will give use the 4 sequences that we want to perform independent component analysis on. 
 ```python
