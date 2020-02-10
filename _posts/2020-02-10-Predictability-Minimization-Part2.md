@@ -96,5 +96,84 @@ class PM(nn.Module):
 
 On to the loss terms: we have a standarse mean square error loss for the autoencoder part:
 
+$$ I = \frac{1}{n} \sum_{n=1}^N (Y_{true} - Y_{pred})^2 $$
 
-$$ I = \frac{1}{n} \sum_{n=1}^N (Y_{code} - Y_{pred})^2 $$
+In addition to this, we compute the mean square error between the value of the code units and the predictor unit's estimates of what they are. This is called $$V_c$$ in the original paper.
+
+$$ V_c = \frac{1}{n} \sum_{n=1}^N (Y_{code} - Y_{predicted_code})^2 $$
+
+The code units try to maximize this loss (as they supply the first term) while the predictor units try to minimize this loss (they supply the second term).
+
+The following piece of code defines the losses and optimizers:
+```python
+train_dataset = UniformDataset()
+
+# device = torch.device('cuda')
+device = 'cpu'
+num_epochs = 10000
+batch_size = 4
+learning_rate = 0.01
+
+# Data loader
+train_loader = torch.utils.data.DataLoader(dataset=train_dataset,
+                                           batch_size=batch_size,
+                                           shuffle=True)
+
+model = PM().to(device)
+
+# Loss that measures how close the predictions of the predictor units are to the actual code units
+criterion = nn.MSELoss()
+
+# Loss for the auto encode structure
+reconstruction_criterion = nn.MSELoss()
+
+# This optimizer governs the code units
+codeoptimizer = torch.optim.Adam(list(model.encoder.parameters()), lr=learning_rate)
+
+# This optimizer governs the decoder
+reconstructionoptimizer = torch.optim.Adam(list(model.decoder.parameters()) + list(model.encoder.parameters()),
+                                           lr=learning_rate)
+
+# This optimizer governs the predictors, that enforce the independence of the code units
+predictionoptimizer = torch.optim.Adam(list(model.predictor1.parameters()) + list(model.predictor2.parameters()),
+                                       lr=2 * learning_rate)
+```
+
+Note especially that we are using three different optimizers: this is not optimal for stability and we will be following up on this in a future post.
+
+The code that actually trains the model is the following:
+```python
+# Train the model
+    total_step = len(train_loader)
+    for epoch in range(num_epochs):
+        for i, samples in enumerate(train_loader):
+            # Move tensors to the configured device
+            seqs = samples.float().to(device)
+            # print(seqs.shape)
+            # Forward pass
+            code, pred1, pred2, reconstruction = model.forward(seqs)
+            # print(code.shape)
+            preds = torch.cat([pred1, pred2], dim=1).to(device)
+            # print(preds.shape)
+
+            # The reconstruction loss
+            recon_loss = 1 * reconstruction_criterion(seqs, reconstruction)
+
+            # The predictive layers want to minimize the predictor loss (predict the code units from each other) while
+            # The code units want to maximize that the predictor loss
+
+            predictor_loss = criterion(code, preds)
+            code_loss = -1 * predictor_loss
+
+            predictionoptimizer.zero_grad()
+            predictor_loss.backward(retain_graph=True)
+            predictionoptimizer.step()
+
+            reconstructionoptimizer.zero_grad()
+            recon_loss.backward(retain_graph=True)
+            reconstructionoptimizer.step()
+
+            codeoptimizer.zero_grad()
+            code_loss.backward(retain_graph=True)
+            codeoptimizer.step()
+```
