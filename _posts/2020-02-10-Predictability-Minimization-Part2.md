@@ -100,7 +100,7 @@ $$ I = \frac{1}{n} \sum_{n=1}^N (Y_{true} - Y_{pred})^2 $$
 
 In addition to this, we compute the mean square error between the value of the code units and the predictor unit's estimates of what they are. This is called $$V_c$$ in the original paper.
 
-$$ V_c = \frac{1}{n} \sum_{n=1}^N (Y_{code} - Y_{predicted_code})^2 $$
+$$ V_c = \frac{1}{n} \sum_{n=1}^N (Y_{code} - Y_{predictedcode})^2 $$
 
 The code units try to maximize this loss (as they supply the first term) while the predictor units try to minimize this loss (they supply the second term).
 
