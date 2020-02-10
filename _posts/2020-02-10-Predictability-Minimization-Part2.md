@@ -40,6 +40,7 @@ A typical set of 4 data points looks like this:
 >>  [0.5881097  0.97043498 0.98881562 0.11357908]
 >>  [0.94657677 0.69272661 0.26470928 0.88500763]]
 ```
+The original paper claimed that given two code units, with the specific setup of losses that we will clarify, the encoder will learn to encode these 4 sequences in binary notation. This means that there will be 4 different values for the length-2 latent code: 00, 01, 10 and 11. 
 
 Now we define the Predictability Minimization class, which will host the neural networks that will be adversarially optimizing their losses. The point of this code is to be clear, but it can definitely be expanded to a case with a larger code and more predictor units. 
 
@@ -185,3 +186,23 @@ for epoch in range(num_epochs):
         code_loss.backward(retain_graph=True)
         codeoptimizer.step()
 ```
+
+After training the network, the code units give the following values for the 4 sequences:
+
+```python
+tensor([[9.9999e-01, 2.1293e-11],
+        [1.9540e-08, 9.9998e-01],
+        [8.5616e-06, 2.4651e-05],
+        [1.0000e+00, 1.0000e+00]])
+```
+When rounded, this gives the following values:
+
+```python
+tensor([[1, 0],
+        [0, 1],
+        [0, 0],
+        [1, 1]])
+```
+
+That does look like a binary code!
+
