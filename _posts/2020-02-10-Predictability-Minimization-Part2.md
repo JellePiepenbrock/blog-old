@@ -121,7 +121,8 @@ train_loader = torch.utils.data.DataLoader(dataset=train_dataset,
 
 model = PM().to(device)
 
-# Loss that measures how close the predictions of the predictor units are to the actual code units
+# Loss that measures how close the predictions of the 
+# predictor units are to the actual code units
 criterion = nn.MSELoss()
 
 # Loss for the auto encode structure
@@ -131,11 +132,13 @@ reconstruction_criterion = nn.MSELoss()
 codeoptimizer = torch.optim.Adam(list(model.encoder.parameters()), lr=learning_rate)
 
 # This optimizer governs the decoder
-reconstructionoptimizer = torch.optim.Adam(list(model.decoder.parameters()) + list(model.encoder.parameters()),
+reconstructionoptimizer = torch.optim.Adam(list(model.decoder.parameters()) +
+                                           list(model.encoder.parameters()),
                                            lr=learning_rate)
 
 # This optimizer governs the predictors, that enforce the independence of the code units
-predictionoptimizer = torch.optim.Adam(list(model.predictor1.parameters()) + list(model.predictor2.parameters()),
+predictionoptimizer = torch.optim.Adam(list(model.predictor1.parameters()) + 
+                                       list(model.predictor2.parameters()),
                                        lr=2 * learning_rate)
 ```
 
@@ -144,36 +147,37 @@ Note especially that we are using three different optimizers: this is not optima
 The code that actually trains the model is the following:
 ```python
 # Train the model
-    total_step = len(train_loader)
-    for epoch in range(num_epochs):
-        for i, samples in enumerate(train_loader):
-            # Move tensors to the configured device
-            seqs = samples.float().to(device)
-            # print(seqs.shape)
-            # Forward pass
-            code, pred1, pred2, reconstruction = model.forward(seqs)
-            # print(code.shape)
-            preds = torch.cat([pred1, pred2], dim=1).to(device)
-            # print(preds.shape)
+total_step = len(train_loader)
+for epoch in range(num_epochs):
+    for i, samples in enumerate(train_loader):
+        # Move tensors to the configured device
+        seqs = samples.float().to(device)
+        # print(seqs.shape)
+        # Forward pass
+        code, pred1, pred2, reconstruction = model.forward(seqs)
+        # print(code.shape)
+        preds = torch.cat([pred1, pred2], dim=1).to(device)
+        # print(preds.shape)
 
-            # The reconstruction loss
-            recon_loss = 1 * reconstruction_criterion(seqs, reconstruction)
+        # The reconstruction loss
+        recon_loss = 1 * reconstruction_criterion(seqs, reconstruction)
 
-            # The predictive layers want to minimize the predictor loss (predict the code units from each other) while
-            # The code units want to maximize that the predictor loss
+        # The predictive layers want to minimize the 
+        # predictor loss (predict the code units from each other) while
+        # The code units want to maximize that the predictor loss
 
-            predictor_loss = criterion(code, preds)
-            code_loss = -1 * predictor_loss
+        predictor_loss = criterion(code, preds)
+        code_loss = -1 * predictor_loss
 
-            predictionoptimizer.zero_grad()
-            predictor_loss.backward(retain_graph=True)
-            predictionoptimizer.step()
+        predictionoptimizer.zero_grad()
+        predictor_loss.backward(retain_graph=True)
+        predictionoptimizer.step()
 
-            reconstructionoptimizer.zero_grad()
-            recon_loss.backward(retain_graph=True)
-            reconstructionoptimizer.step()
+        reconstructionoptimizer.zero_grad()
+        recon_loss.backward(retain_graph=True)
+        reconstructionoptimizer.step()
 
-            codeoptimizer.zero_grad()
-            code_loss.backward(retain_graph=True)
-            codeoptimizer.step()
+        codeoptimizer.zero_grad()
+        code_loss.backward(retain_graph=True)
+        codeoptimizer.step()
 ```
