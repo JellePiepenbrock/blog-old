@@ -5,6 +5,10 @@ title: Predictability Minimization (Part I)
 
 This will be a small blog post explaining the setup of Juergen Schmidhubers 1992 paper on 'Predictability Minimization'. The full title of the paper is 'Learning Factorial Codes by Predictability Minimization'. Recently, there has been a lot of literature focusing on 'disentangled representations' in variational autoencoders and other neural network architectures. In a follow-up post, I will give a simple Python implementation of the paper's central idea.
 
+In the author's own words, in the abstract, the idea goes like this:
+
+>I propose a novel general principle for unsupervised learning of distributed nonredundant internal representations of input patterns. The principle is based on two opposing forces. For each representational unit there is an adaptive predictor, which tries to predict the unit from the remaining units. In turn, each unit tries to react to the environment such that it minimizes its predictability. This encourages each unit to filter "abstract concepts" out of the environmental input such that these concepts are statistically independent of those on which the other units focus. 
+
 Neural networks find internal representations of their training data during the gradient descent optimization procedure. The problem here is often that these representations are not intelligible by humans. One major component of this is that various dimensions of the representations can team up together, in pairs, groups, or all of them together, to capture a specific aspect of the training data. This makes it very hard to understand what a particular value of one of the representation dimensions represents. 
 
 The neural network F is a function $$F:  X \to Z$$ where Z is lower-dimensional. Specific dimensions k of Z will be labeled $$ z_k $$.
